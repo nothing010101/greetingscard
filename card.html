@@ -313,6 +313,18 @@ if (!DATA) {
 const THEME = DATA?.theme || 'sayang';
 document.body.className = THEME;
 
+// Pre-load YT API segera saat halaman dibuka — biar player siap pas intro selesai
+(function(){
+  if(!DATA || !DATA.yt || DATA.ytMode !== 'audio') return;
+  const m = DATA.yt.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&
+?#]+)/);
+  if(!m) return;
+  window._ytVid = m[1];
+  const tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+})();
+
 // ── Occasion labels ───────────────────────────────────────────────────────────
 const OCC = {birthday:'Selamat Ulang Tahun',anniversary:'Selamat Anniversari',graduation:'Selamat Wisuda',wedding:'Selamat Menikah',newborn:'Selamat atas Kelahiran si Kecil',newyear:'Selamat Tahun Baru',miss:'Ada yang Kangen Kamu',sorry:'Minta Maaf',custom:'Ada Pesan Buat Kamu'};
 const OCCE = {birthday:'🎂',anniversary:'💍',graduation:'🎓',wedding:'💒',newborn:'👶',newyear:'🎊',miss:'💌',sorry:'🙏',custom:'✨'};
@@ -378,8 +390,17 @@ function nextStep() {
 
 function showCard() {
   document.getElementById('intro').classList.add('hide');
+  // Set flag — user sudah berinteraksi, browser izinkan autoplay
+  ytAutoplayPending = true;
   buildCard();
-  setTimeout(()=>{ document.getElementById('card').classList.add('show'); }, 300);
+  setTimeout(()=>{
+    document.getElementById('card').classList.add('show');
+    // Kalau player sudah ready sebelum card selesai build, play langsung
+    if (ytPlayer && typeof ytPlayer.playVideo === 'function' && ytAutoplayPending) {
+      ytPlayer.playVideo();
+      ytAutoplayPending = false;
+    }
+  }, 300);
 }
 
 // ── BUILD CARD ────────────────────────────────────────────────────────────────
@@ -641,18 +662,21 @@ function buildMedia(yt, ytMode, color) {
 }
 
 // YT IFrame API for audio mode
-let ytPlayer = null, ytPlaying = false, ytTimer = null;
+let ytPlayer = null, ytPlaying = false, ytTimer = null, ytAutoplayPending = false;
 
 function initYT(url) {
   const id = getYtId(url);
   if (!id) return;
-  const tag = document.createElement('script');
-  tag.src = 'https://www.youtube.com/iframe_api';
-  document.head.appendChild(tag);
   window._ytVid = id;
+  if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tag);
+  }
 }
 
 window.onYouTubeIframeAPIReady = function() {
+  if (!window._ytVid) return;
   ytPlayer = new YT.Player('ytHidden', {
     height:'0', width:'0',
     videoId: window._ytVid,
@@ -662,6 +686,11 @@ window.onYouTubeIframeAPIReady = function() {
         const title = e.target.getVideoData().title;
         const el = document.getElementById('apTitle');
         if (el) el.textContent = title || 'Musik';
+        // Autoplay karena user sudah klik tombol intro = browser izinkan
+        if (ytAutoplayPending) {
+          e.target.playVideo();
+          ytAutoplayPending = false;
+        }
       },
       onStateChange: function(e) {
         if (e.data === YT.PlayerState.PLAYING) {

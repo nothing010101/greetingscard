@@ -316,11 +316,10 @@ document.body.className = THEME;
 // Pre-load YT API segera saat halaman dibuka — biar player siap pas intro selesai
 (function(){
   if(!DATA || !DATA.yt || DATA.ytMode !== 'audio') return;
-  const m = DATA.yt.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&
-?#]+)/);
-  if(!m) return;
-  window._ytVid = m[1];
-  const tag = document.createElement('script');
+  var ytm = DATA.yt.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?#\n]+)/);
+  if(!ytm) return;
+  window._ytVid = ytm[1];
+  var tag = document.createElement('script');
   tag.src = 'https://www.youtube.com/iframe_api';
   document.head.appendChild(tag);
 })();

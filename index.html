@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wishcraft — Buat Ucapan yang Tak Terlupakan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: #7A5E2A;
+    --ink: #0D0C0A;
+    --paper: #F7F3EC;
+    --paper-dark: #EDE8DF;
+    --smoke: #1A1814;
+    --muted: #8A8070;
+    --cream: #FAF7F2;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'DM Mono', monospace;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    position: fixed;
+    width: 8px; height: 8px;
+    background: var(--gold);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s ease;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 32px; height: 32px;
+    border: 1px solid var(--gold);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transition: all 0.15s ease;
+    opacity: 0.5;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.4;
+  }
+
+  /* Header */
+  header {
+    padding: 3rem 4rem 2rem;
+    display: flex;
+    align-items: baseline;
+    gap: 2rem;
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+  }
+
+  .wordmark {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 300;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  .tagline {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  /* Main layout */
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 4rem 2rem 6rem;
+  }
+
+  .hero-text {
+    margin-bottom: 4rem;
+  }
+
+  .hero-text h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    font-weight: 300;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: var(--paper);
+  }
+
+  .hero-text h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-text p {
+    margin-top: 1.5rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    max-width: 420px;
+    line-height: 2;
+  }
+
+  /* Form */
+  .form-grid {
+    display: grid;
+    gap: 0;
+  }
+
+  .field-group {
+    padding: 2rem 0;
+    border-bottom: 1px solid rgba(201,168,76,0.1);
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 2rem;
+    align-items: start;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.6s forwards;
+  }
+
+  .field-group:nth-child(1) { animation-delay: 0.1s; }
+  .field-group:nth-child(2) { animation-delay: 0.2s; }
+  .field-group:nth-child(3) { animation-delay: 0.3s; }
+  .field-group:nth-child(4) { animation-delay: 0.4s; }
+  .field-group:nth-child(5) { animation-delay: 0.5s; }
+  .field-group:nth-child(6) { animation-delay: 0.6s; }
+  .field-group:nth-child(7) { animation-delay: 0.7s; }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .field-label {
+    padding-top: 0.3rem;
+  }
+
+  .field-label span {
+    display: block;
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.4rem;
+  }
+
+  .field-label p {
+    font-size: 0.65rem;
+    color: var(--muted);
+    line-height: 1.8;
+    letter-spacing: 0.05em;
+  }
+
+  .field-input input,
+  .field-input textarea,
+  .field-input select {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(201,168,76,0.3);
+    color: var(--paper);
+    font-family: 'DM Mono', monospace;
+    font-weight: 300;
+    font-size: 0.85rem;
+    padding: 0.8rem 0;
+    outline: none;
+    transition: border-color 0.3s ease;
+    letter-spacing: 0.05em;
+    cursor: none;
+  }
+
+  .field-input input:focus,
+  .field-input textarea:focus,
+  .field-input select:focus {
+    border-bottom-color: var(--gold);
+  }
+
+  .field-input input::placeholder,
+  .field-input textarea::placeholder {
+    color: rgba(138,128,112,0.5);
+    font-style: italic;
+  }
+
+  .field-input textarea {
+    resize: none;
+    min-height: 120px;
+    line-height: 2;
+  }
+
+  .field-input select {
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C9A84C' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    padding-right: 2rem;
+    cursor: none;
+  }
+
+  .field-input select option {
+    background: var(--smoke);
+    color: var(--paper);
+  }
+
+  /* Theme picker */
+  .theme-picker {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .theme-option {
+    position: relative;
+    cursor: none;
+  }
+
+  .theme-option input {
+    position: absolute;
+    opacity: 0;
+    width: 0; height: 0;
+  }
+
+  .theme-card {
+    height: 72px;
+    border-radius: 4px;
+    border: 1px solid rgba(201,168,76,0.15);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: flex-end;
+    padding: 0.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .theme-card span {
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+  }
+
+  .theme-option input:checked + .theme-card {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 1px var(--gold), inset 0 0 20px rgba(201,168,76,0.1);
+  }
+
+  .theme-card.noir { background: linear-gradient(135deg, #0D0C0A 0%, #1a1814 100%); }
+  .theme-card.celestial { background: linear-gradient(135deg, #0a0a1a 0%, #1a1035 50%, #0d1a2e 100%); }
+  .theme-card.garden { background: linear-gradient(135deg, #0a1a0f 0%, #1a2e1a 50%, #0f2015 100%); }
+  .theme-card.sakura { background: linear-gradient(135deg, #1a0a0f 0%, #2e1520 50%, #1a0d14 100%); }
+
+  /* Char counter */
+  .char-count {
+    text-align: right;
+    font-size: 0.6rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+    letter-spacing: 0.1em;
+  }
+
+  /* Submit */
+  .submit-area {
+    padding-top: 3rem;
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.8s forwards;
+  }
+
+  .btn-generate {
+    position: relative;
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    padding: 1.2rem 3rem;
+    cursor: none;
+    overflow: hidden;
+    transition: color 0.4s ease;
+  }
+
+  .btn-generate::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gold);
+    transform: translateX(-100%);
+    transition: transform 0.4s cubic-bezier(0.76, 0, 0.24, 1);
+  }
+
+  .btn-generate:hover::before { transform: translateX(0); }
+  .btn-generate:hover { color: var(--ink); }
+
+  .btn-generate span { position: relative; z-index: 1; }
+
+  .submit-note {
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    line-height: 2;
+    max-width: 260px;
+  }
+
+  /* Result Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(13,12,10,0.95);
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+    backdrop-filter: blur(8px);
+  }
+
+  .modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal {
+    max-width: 560px;
+    width: 90%;
+    padding: 3rem;
+    border: 1px solid rgba(201,168,76,0.3);
+    position: relative;
+    transform: translateY(30px);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .modal-overlay.active .modal {
+    transform: translateY(0);
+  }
+
+  .modal-corner {
+    position: absolute;
+    width: 20px; height: 20px;
+    border-color: var(--gold);
+    border-style: solid;
+  }
+  .modal-corner.tl { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+  .modal-corner.tr { top: -1px; right: -1px; border-width: 1px 1px 0 0; }
+  .modal-corner.bl { bottom: -1px; left: -1px; border-width: 0 0 1px 1px; }
+  .modal-corner.br { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+
+  .modal h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+
+  .modal p {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    line-height: 2;
+    margin-bottom: 1.5rem;
+  }
+
+  .link-box {
+    background: rgba(201,168,76,0.05);
+    border: 1px solid rgba(201,168,76,0.2);
+    padding: 1rem;
+    font-size: 0.65rem;
+    color: var(--paper);
+    letter-spacing: 0.05em;
+    word-break: break-all;
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .btn-copy, .btn-close {
+    flex: 1;
+    padding: 0.9rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: none;
+    transition: all 0.3s ease;
+    border: none;
+    outline: none;
+  }
+
+  .btn-copy {
+    background: var(--gold);
+    color: var(--ink);
+  }
+
+  .btn-copy:hover { background: var(--gold-light); }
+
+  .btn-close {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid rgba(201,168,76,0.2);
+  }
+
+  .btn-close:hover {
+    color: var(--paper);
+    border-color: rgba(201,168,76,0.5);
+  }
+
+  .copied-feedback {
+    font-size: 0.6rem;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    margin-top: 0.75rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .copied-feedback.show { opacity: 1; }
+
+  /* Decorative line */
+  .deco-line {
+    width: 1px;
+    height: 80px;
+    background: linear-gradient(to bottom, transparent, var(--gold-dim), transparent);
+    margin: 0 auto 3rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.05s forwards;
+  }
+
+  @media (max-width: 640px) {
+    header { padding: 2rem; }
+    main { padding: 2.5rem 1.5rem 4rem; }
+    .field-group { grid-template-columns: 1fr; gap: 0.75rem; }
+    .theme-picker { grid-template-columns: repeat(2, 1fr); }
+    .submit-area { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<header>
+  <div class="wordmark">Wishcraft</div>
+  <div class="tagline">Buat ucapan yang tak terlupakan</div>
+</header>
+
+<main>
+  <div class="hero-text">
+    <h1>Sebuah pesan,<br><em>dibungkus</em><br>dengan indah.</h1>
+    <p>Isi formulir di bawah. Kami akan menghasilkan sebuah halaman khusus yang bisa kamu kirimkan kepada orang yang kamu sayangi.</p>
+  </div>
+
+  <div class="deco-line"></div>
+
+  <div class="form-grid" id="wishForm">
+
+    <!-- Nama Pengirim -->
+    <div class="field-group">
+      <div class="field-label">
+        <span>01 — Dari</span>
+        <p>Nama kamu sebagai pengirim ucapan</p>
+      </div>
+      <div class="field-input">
+        <input type="text" id="senderName" placeholder="nama kamu..." maxlength="50">
+      </div>
+    </div>
+
+    <!-- Nama Penerima -->
+    <div class="field-group">
+      <div class="field-label">
+        <span>02 — Untuk</span>
+        <p>Nama orang yang kamu ucapkan</p>
+      </div>
+      <div class="field-input">
+        <input type="text" id="receiverName" placeholder="nama mereka..." maxlength="50">
+      </div>
+    </div>
+
+    <!-- Jenis Ucapan -->
+    <div class="field-group">
+      <div class="field-label">
+        <span>03 — Momen</span>
+        <p>Apa yang sedang kamu rayakan?</p>
+      </div>
+      <div class="field-input">
+        <select id="occasion">
+          <option value="birthday">🎂 Ulang Tahun</option>
+          <option value="anniversary">💍 Anniversari</option>
+          <option value="graduation">🎓 Wisuda</option>
+          <option value="newborn">👶 Kelahiran Bayi</option>
+          <option value="wedding">💒 Pernikahan</option>
+          <option value="newyear">🎊 Tahun Baru</option>
+          <option value="custom">✨ Lainnya (isi di pesan)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Pesan -->
+    <div class="field-group">
+      <div class="field-label">
+        <span>04 — Pesan</span>
+        <p>Kata-katamu dari hati. Boleh panjang, boleh pendek.</p>
+      </div>
+      <div class="field-input">
+        <textarea id="message" placeholder="tulis ucapanmu di sini..." maxlength="500" oninput="updateCount(this, 'msgCount', 500)"></textarea>
+        <div class="char-count"><span id="msgCount">0</span> / 500</div>
+      </div>
+    </div>
+
+    <!-- Lagu -->
+    <div class="field-group">
+      <div class="field-label">
+        <span>05 — Musik</span>
+        <p>Link YouTube atau Spotify. Akan diputar otomatis saat halaman dibuka.</p>
+      </div>
+      <div class="field-input">
+        <input type="url" id="musicUrl" placeholder="https://youtube.com/watch?v=...">
+      </div>
+    </div>
+
+    <!-- Foto (URL) -->
+    <div class="field-group">
+      <div class="field-label">
+        <span>06 — Foto</span>
+        <p>URL foto (dari Google Drive, Imgur, dll). Opsional.</p>
+      </div>
+      <div class="field-input">
+        <input type="url" id="photoUrl" placeholder="https://i.imgur.com/...">
+      </div>
+    </div>
+
+    <!-- Tema -->
+    <div class="field-group">
+      <div class="field-label">
+        <span>07 — Tema</span>
+        <p>Pilih suasana halaman yang akan dilihat penerima</p>
+      </div>
+      <div class="field-input">
+        <div class="theme-picker">
+          <label class="theme-option">
+            <input type="radio" name="theme" value="noir" checked>
+            <div class="theme-card noir"><span style="color:#C9A84C">Noir</span></div>
+          </label>
+          <label class="theme-option">
+            <input type="radio" name="theme" value="celestial">
+            <div class="theme-card celestial"><span style="color:#7BA7D4">Celestial</span></div>
+          </label>
+          <label class="theme-option">
+            <input type="radio" name="theme" value="garden">
+            <div class="theme-card garden"><span style="color:#7DC47D">Garden</span></div>
+          </label>
+          <label class="theme-option">
+            <input type="radio" name="theme" value="sakura">
+            <div class="theme-card sakura"><span style="color:#D47BA7">Sakura</span></div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="submit-area">
+    <button class="btn-generate" onclick="generateLink()">
+      <span>Generate Link →</span>
+    </button>
+    <p class="submit-note">Link yang dihasilkan sudah berisi semua data. Tidak ada server, tidak ada database — privasi terjaga.</p>
+  </div>
+</main>
+
+<!-- Modal Result -->
+<div class="modal-overlay" id="resultModal">
+  <div class="modal">
+    <div class="modal-corner tl"></div>
+    <div class="modal-corner tr"></div>
+    <div class="modal-corner bl"></div>
+    <div class="modal-corner br"></div>
+    <h2>Link siap.</h2>
+    <p>Salin link di bawah dan kirimkan kepada orang yang kamu maksud. Saat mereka membukanya, mereka akan disambut dengan halaman yang sudah kamu rancang.</p>
+    <div class="link-box" id="generatedLink">—</div>
+    <div class="modal-actions">
+      <button class="btn-copy" onclick="copyLink()"><span>Salin Link</span></button>
+      <button class="btn-close" onclick="closeModal()">Tutup</button>
+    </div>
+    <div class="copied-feedback" id="copiedMsg">✓ Tersalin ke clipboard</div>
+  </div>
+</div>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx - 4 + 'px';
+    cursor.style.top = my - 4 + 'px';
+  });
+
+  function animateRing() {
+    rx += (mx - rx - 16) * 0.12;
+    ry += (my - ry - 16) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top = ry + 'px';
+    requestAnimationFrame(animateRing);
+  }
+  animateRing();
+
+  // Char counter
+  function updateCount(el, countId, max) {
+    document.getElementById(countId).textContent = el.value.length;
+  }
+
+  // Get YouTube embed ID
+  function getYouTubeId(url) {
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
+    return match ? match[1] : null;
+  }
+
+  // Generate link
+  function generateLink() {
+    const data = {
+      from: document.getElementById('senderName').value.trim() || 'Seseorang',
+      to: document.getElementById('receiverName').value.trim() || 'Kamu',
+      occasion: document.getElementById('occasion').value,
+      msg: document.getElementById('message').value.trim(),
+      music: document.getElementById('musicUrl').value.trim(),
+      photo: document.getElementById('photoUrl').value.trim(),
+      theme: document.querySelector('input[name="theme"]:checked').value,
+    };
+
+    if (!data.msg) {
+      document.getElementById('message').focus();
+      document.getElementById('message').style.borderBottomColor = '#ff6b6b';
+      setTimeout(() => document.getElementById('message').style.borderBottomColor = '', 2000);
+      return;
+    }
+
+    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+    const url = window.location.origin + window.location.pathname.replace('index.html', '') + 'card.html?d=' + encoded;
+
+    document.getElementById('generatedLink').textContent = url;
+    document.getElementById('resultModal').classList.add('active');
+  }
+
+  function copyLink() {
+    const link = document.getElementById('generatedLink').textContent;
+    navigator.clipboard.writeText(link).then(() => {
+      const fb = document.getElementById('copiedMsg');
+      fb.classList.add('show');
+      setTimeout(() => fb.classList.remove('show'), 2500);
+    });
+  }
+
+  function closeModal() {
+    document.getElementById('resultModal').classList.remove('active');
+  }
+
+  // Close modal on overlay click
+  document.getElementById('resultModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+</script>
+</body>
+</html>

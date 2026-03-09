@@ -147,7 +147,7 @@ header{padding:1.5rem 2.5rem;display:flex;align-items:center;justify-content:spa
   <div class="uz" id="uz">
     <input type="file" id="pi" accept="image/*" multiple>
     <div class="uzi">📸</div>
-    <div class="uzt"><strong>Klik atau drag foto</strong><br>Bisa banyak foto → jadi slideshow otomatis<br>JPG, PNG, WEBP · Max 5MB/foto</div>
+    <div class="uzt"><strong>Klik atau drag foto</strong><br>Bisa banyak foto → jadi slideshow otomatis<br>JPG, PNG, WEBP · Max 5MB/foto · <span style="color:rgba(232,255,71,0.6)">Auto-hapus 7 hari</span></div>
   </div>
   <div class="pprev" id="pprev"></div>
   <div class="ust" id="ust"></div>
@@ -216,7 +216,7 @@ async function handleFiles(files) {
 async function uploadImg(file) {
   const fd = new FormData();
   fd.append('image', file);
-  const res = await fetch(`https://api.imgbb.com/1/upload?key=${IKEY}`, { method:'POST', body:fd });
+  const res = await fetch(`https://api.imgbb.com/1/upload?key=${IKEY}&expiration=604800`, { method:'POST', body:fd }); // 604800 = 7 hari
   const j = await res.json();
   if (!j.success) throw new Error();
   return { url: j.data.url, thumb: j.data.thumb?.url || j.data.url };
